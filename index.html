@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPYMAGE — PKL Project</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* ══════════════════════════════════════════════
+           RESET & BASE
+        ══════════════════════════════════════════════ */
+        *, *::before, *::after {
+            margin: 0; padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+        }
+
+        :root {
+            --bg:    #070511;
+            --purp:  #7c3aed;
+            --red:   #ef4444;
+            --gold:  #fbbf24;
+            --green: #22c55e;
+            --dark:  #0f0b1e;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: "Press Start 2P", monospace;
+            color: #fff;
+            overflow: hidden;
+            width: 100vw; height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ══════════════════════════════════════════════
+           SCREEN SYSTEM
+        ══════════════════════════════════════════════ */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity .4s ease, transform .4s ease;
+            z-index: 10;
+        }
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.04);
+        }
+
+        /* ══════════════════════════════════════════════
+           LANDING PAGE
+        ══════════════════════════════════════════════ */
+        #menu-page {
+            background: radial-gradient(ellipse at 50% 40%, #1e1035 0%, #070511 70%);
+            gap: 0;
+        }
+
+        .logo-wrap {
+            text-align: center;
+            margin-bottom: 36px;
+            animation: floatLogo 3s ease-in-out infinite;
+        }
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-8px); }
+        }
+
+        h1 {
+            font-size: clamp(28px, 4vw, 48px);
+            color: var(--gold);
+            text-shadow: 4px 4px 0 #451a00, 0 0 40px rgba(251,191,36,0.4);
+            letter-spacing: 6px;
+            margin-bottom: 10px;
+        }
+        .studio-tag { font-size: 9px; color: var(--purp); letter-spacing: 4px; }
+
+        /* ── Menu Layout ── */
+        .menu-content {
+            display: flex;
+            gap: 48px;
+            align-items: flex-start;
+        }
+
+        .menu-left { display: flex; flex-direction: column; gap: 16px; }
+
+        /* ── Leaderboard Panel ── */
+        .leaderboard-panel {
+            width: 300px;
+            background: rgba(124,58,237,0.08);
+            border: 2px solid rgba(124,58,237,0.3);
+            border-radius: 8px;
+            padding: 20px 16px;
+        }
+        .lb-title {
+            font-size: 9px;
+            color: var(--gold);
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 16px;
+            text-shadow: 0 0 12px rgba(251,191,36,0.6);
+        }
+        .lb-list { display: flex; flex-direction: column; gap: 10px; }
+        .lb-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 8px;
+            padding: 6px 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+        }
+        .lb-row.rank-1 { background: rgba(251,191,36,0.12); border-left: 3px solid var(--gold); }
+        .lb-row.rank-2 { background: rgba(200,200,200,0.08); border-left: 3px solid #aaa; }
+        .lb-row.rank-3 { background: rgba(180,100,40,0.10); border-left: 3px solid #cd7f32; }
+        .lb-rank  { color: var(--purp); width: 20px; flex-shrink: 0; }
+        .lb-name  { color: #fff; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lb-score { color: var(--gold); flex-shrink: 0; }
+        .lb-empty { font-size: 7px; color: #444; text-align: center; padding: 20px 0; }
+
+        /* ── Key Guide ── */
+        .key-guide {
+            margin-top: 14px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px;
+            font-size: 7px;
+            color: #555;
+            letter-spacing: 1px;
+            line-height: 1.8;
+            text-align: center;
+        }
+
+        /* ══════════════════════════════════════════════
+           BUTTONS
+        ══════════════════════════════════════════════ */
+        .btn-group { display: flex; flex-direction: column; gap: 16px; }
+        .btn-row   { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+
+        .btn {
+            width: 240px; height: 68px;
+            border: none; cursor: pointer;
+            color: #fff;
+            font-family: "Press Start 2P"; font-size: 13px;
+            background: transparent;
+            background-size: 100% 100%;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform .1s, filter .15s;
+            position: relative;
+        }
+        .btn:hover  { transform: scale(1.06); filter: brightness(1.3); }
+        .btn:active { transform: scale(0.94); }
+        .btn-start  { background-image: url('btn_purple.png'); }
+        .btn-quit   { background-image: url('btn_red.png'); }
+
+        /* Fallback jika PNG button tidak ada */
+        .btn-start:not([style*="background-image"]),
+        .btn-start {
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+        }
+
+        /* ══════════════════════════════════════════════
+           GAME SCREEN
+        ══════════════════════════════════════════════ */
+        #game-page { background: #000; z-index: 10; }
+
+        #game-container {
+            position: relative;
+            width: 1280px;
+            height: 720px;
+            border: none;
+            box-shadow: 0 0 80px 20px rgba(0,0,0,0.95);
+            overflow: hidden;
+        }
+
+        #game-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: block;
+            z-index: 1;
+        }
+
+        /* ══════════════════════════════════════════════
+           HUD
+        ══════════════════════════════════════════════ */
+        #hud {
+            position: absolute;
+            top: 18px; left: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .score-box {
+            font-size: 13px;
+            color: var(--gold);
+            text-shadow: 2px 2px 0 #000, 0 0 12px rgba(251,191,36,0.4);
+        }
+
+        /* Combo HUD badge */
+        #combo-hud {
+            font-size: 10px;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 0 #000;
+            min-height: 14px;
+            transition: opacity .3s;
+        }
+
+        #health-bar-wrap {
+            position: relative;
+            width: 200px;
+            height: 40px;
+        }
+
+        #health-bar-img, #health-bar-shadow {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: url('assets/Healtbar.png');
+            background-repeat: no-repeat;
+            background-size: 100% 400%;
+            image-rendering: pixelated;
+        }
+        #health-bar-img    { z-index: 2; transition: none !important; }
+        #health-bar-shadow { z-index: 1; transition: background-position-y 0.7s ease; filter: brightness(0.6) sepia(1) hue-rotate(-20deg) saturate(2); }
+
+        #level-indicator {
+            position: absolute;
+            top: 18px; right: 18px;
+            font-size: 13px;
+            color: #888;
+            text-shadow: 1px 1px 0 #000;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        #key-hint {
+            position: absolute;
+            bottom: 12px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 7px;
+            color: #222;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* ══════════════════════════════════════════════
+           OVERLAYS (Pause / Win / Lose)
+        ══════════════════════════════════════════════ */
+        .overlay {
+            background: rgba(5, 2, 15, 0.92);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+        }
+
+        .overlay-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 48px 56px;
+            min-width: 480px;
+        }
+
+        .overlay h2 {
+            font-size: clamp(28px, 4vw, 46px);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .overlay .subtitle {
+            font-size: 9px;
+            margin-bottom: 28px;
+            color: #666;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        /* Final score display */
+        .final-score-box {
+            background: rgba(124,58,237,0.12);
+            border: 1px solid rgba(124,58,237,0.3);
+            border-radius: 8px;
+            padding: 14px 32px;
+            margin-bottom: 28px;
+            text-align: center;
+        }
+        .final-score-label { font-size: 7px; color: #666; letter-spacing: 2px; margin-bottom: 8px; }
+        .final-score-value { font-size: 28px; color: var(--gold); text-shadow: 0 0 20px rgba(251,191,36,0.5); }
+
+        /* Name input */
+        .name-input-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 28px;
+            width: 100%;
+        }
+        .name-input-label { font-size: 7px; color: #888; letter-spacing: 2px; }
+        .name-input {
+            width: 260px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(124,58,237,0.4);
+            border-radius: 6px;
+            color: #fff;
+            font-family: "Press Start 2P";
+            font-size: 11px;
+            text-align: center;
+            letter-spacing: 3px;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .name-input:focus { border-color: var(--purp); background: rgba(124,58,237,0.08); }
+        .name-input::placeholder { color: #333; }
+
+        /* Save status */
+        .save-status {
+            font-size: 7px;
+            min-height: 12px;
+            text-align: center;
+            margin-bottom: 4px;
+            transition: opacity .3s;
+        }
+        .save-status.ok  { color: var(--green); }
+        .save-status.err { color: var(--red); }
+        .save-status.loading { color: #888; }
+
+        .overlay p {
+            font-size: 10px;
+            margin-bottom: 28px;
+            color: #aaa;
+            text-align: center;
+            line-height: 2;
+        }
+
+        .lose-title  { color: var(--red);  text-shadow: 4px 4px 0 #450000, 0 0 30px rgba(239,68,68,0.3); }
+        .win-title   { color: var(--gold); text-shadow: 4px 4px 0 #453a00, 0 0 30px rgba(251,191,36,0.3); }
+        .pause-title { color: #fff;        text-shadow: 4px 4px 0 #111, 0 0 30px rgba(124,58,237,0.4); }
+
+        /* ── Decorative divider ── */
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(124,58,237,0.4), transparent);
+            margin: 0 0 28px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ══════════════════════════ MAIN MENU ══════════════════════════ -->
+    <div id="menu-page" class="screen">
+        <div class="logo-wrap">
+            <h1>CAPYMAGE</h1>
+            <div class="studio-tag">✦ PKL PROJECT ✦</div>
+        </div>
+
+        <div class="menu-content">
+            <!-- Left: Buttons -->
+            <div class="menu-left">
+                <div class="btn-group">
+                    <button class="btn btn-start" onclick="startGame()">START GAME</button>
+                    <button class="btn btn-quit"  onclick="window.close()">QUIT</button>
+                </div>
+                <div class="key-guide">
+                    A = &minus; &nbsp;&nbsp; W = | &nbsp;&nbsp; S = ▼ &nbsp;&nbsp; D = ▲<br>
+                    ARROW KEYS SUPPORTED &nbsp;|&nbsp; [ESC] PAUSE
+                </div>
+            </div>
+
+            <!-- Right: Leaderboard -->
+            <div class="leaderboard-panel">
+                <div class="lb-title">⚔ TOP MAGES ⚔</div>
+                <div class="lb-list" id="lb-list">
+                    <div class="lb-empty">LOADING...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ GAME SCREEN ══════════════════════════ -->
+    <div id="game-page" class="screen hidden">
+        <div id="game-container">
+            <canvas id="game-canvas"></canvas>
+
+            <div id="hud">
+                <div class="score-box">SCORE&nbsp;<span id="current-score">0</span></div>
+                <div id="combo-hud"></div>
+                <div id="health-bar-wrap">
+                    <div id="health-bar-shadow"></div>
+                    <div id="health-bar-img"></div>
+                </div>
+            </div>
+
+            <div id="level-indicator">LV&nbsp;<span id="current-level">1</span></div>
+            <div id="key-hint">[ESC] PAUSE &nbsp;|&nbsp; A=&minus; &nbsp;W=| &nbsp;S=▼ &nbsp;D=▲</div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ PAUSE ══════════════════════════ -->
+    <div id="pause-page" class="screen overlay hidden">
+        <div class="overlay-card">
+            <h2 class="pause-title">PAUSED</h2>
+            <div class="subtitle">TAKE A BREATH, MAGE</div>
+            <div class="divider"></div>
+            <div class="btn-group">
+                <button class="btn btn-start" onclick="resumeGame()">CONTINUE</button>
+                <button class="btn btn-quit"  onclick="goToMenu()">FORFEIT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ DEFEAT ══════════════════════════ -->
+    <div id="lose-page" class="screen overlay hidden">
+        <div class="overlay-card">
+            <h2 class="lose-title">DEFEATED</h2>
+            <div class="subtitle">YOU HAVE FALLEN IN BATTLE</div>
+            <div class="divider"></div>
+
+            <div class="final-score-box">
+                <div class="final-score-label">FINAL SCORE</div>
+                <div class="final-score-value" id="lose-score-display">0</div>
+            </div>
+
+            <div class="name-input-wrap">
+                <div class="name-input-label">ENTER YOUR NAME</div>
+                <input class="name-input" id="lose-name-input" type="text" maxlength="10" placeholder="ANONYMOUS" autocomplete="off" spellcheck="false">
+            </div>
+
+            <div class="save-status" id="lose-save-status"></div>
+
+            <div class="btn-row">
+                <button class="btn btn-start" onclick="submitScoreAndAction('lose','retry')">SAVE &amp; RETRY</button>
+                <button class="btn btn-quit"  onclick="submitScoreAndAction('lose','menu')">SAVE &amp; QUIT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ VICTORY ══════════════════════════ -->
+    <div id="win-page" class="screen overlay hidden">
+        <div class="overlay-card">
+            <h2 class="win-title">VICTORY!</h2>
+            <div class="subtitle">THE DUNGEON HAS BEEN CLEARED</div>
+            <div class="divider"></div>
+
+            <div class="final-score-box">
+                <div class="final-score-label">FINAL SCORE</div>
+                <div class="final-score-value" id="win-score-display">0</div>
+            </div>
+
+            <div class="name-input-wrap">
+                <div class="name-input-label">ENTER YOUR NAME</div>
+                <input class="name-input" id="win-name-input" type="text" maxlength="10" placeholder="ANONYMOUS" autocomplete="off" spellcheck="false">
+            </div>
+
+            <div class="save-status" id="win-save-status"></div>
+
+            <div class="btn-row">
+                <button class="btn btn-start" onclick="submitScoreAndAction('win','retry')">SAVE &amp; RETRY</button>
+                <button class="btn btn-quit"  onclick="submitScoreAndAction('win','menu')">SAVE &amp; MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SUPABASE SDK ══════════════════════════ -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        /* ─── SCREEN MANAGER ─── */
+        const screens = {
+            menu:  document.getElementById('menu-page'),
+            game:  document.getElementById('game-page'),
+            lose:  document.getElementById('lose-page'),
+            win:   document.getElementById('win-page'),
+            pause: document.getElementById('pause-page'),
+        };
+
+        function showScreen(key) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[key].classList.remove('hidden');
+        }
+
+        function startGame() {
+            showScreen('game');
+            if (window.initGameEngine) window.initGameEngine();
+            fetchTopScores(); // refresh board in bg
+        }
+
+        function restartGame() {
+            showScreen('game');
+            if (window.resetLevel) window.resetLevel();
+        }
+
+        function goToMenu() {
+            showScreen('menu');
+            if (window.stopGameEngine) window.stopGameEngine();
+            fetchTopScores();
+        }
+
+        function resumeGame() {
+            showScreen('game');
+            if (window.resumeGameEngine) window.resumeGameEngine();
+        }
+
+        /* ─── OVERLAY HELPERS ─── */
+        function openLosePage() {
+            document.getElementById('lose-score-display').textContent = window._currentScore ?? 0;
+            document.getElementById('lose-name-input').value = '';
+            document.getElementById('lose-save-status').textContent = '';
+            document.getElementById('lose-save-status').className = 'save-status';
+            showScreen('lose');
+        }
+
+        function openWinPage() {
+            document.getElementById('win-score-display').textContent = window._currentScore ?? 0;
+            document.getElementById('win-name-input').value = '';
+            document.getElementById('win-save-status').textContent = '';
+            document.getElementById('win-save-status').className = 'save-status';
+            showScreen('win');
+        }
+
+        /* Make them accessible from capybara.js */
+        window.openLosePage = openLosePage;
+        window.openWinPage  = openWinPage;
+
+        /* ─── ESC → PAUSE ─── */
+        window.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && !screens.game.classList.contains('hidden')) {
+                showScreen('pause');
+                if (window.pauseGameEngine) window.pauseGameEngine();
+            }
+        });
+
+        /* ══════════════════════════════════════════════
+           SUPABASE
+           ⚠ Ganti SUPABASE_URL dan SUPABASE_KEY dengan
+             credentials project kamu setelah setup!
+        ══════════════════════════════════════════════ */
+        const SUPABASE_URL = 'https://hqhvylbgnkstimokigxh.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_vUTVuuQPxc1Vf1ogO7aMMg_dkYO3K5P';
+        let _db = null;
+
+        try {
+            if (!SUPABASE_URL.startsWith('GANTI')) {
+                _db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            }
+        } catch(e) { console.warn('[Supabase] Not configured yet.'); }
+
+        /* ─── SUBMIT SCORE ─── */
+        async function submitScoreAndAction(page, action) {
+            const inputEl  = document.getElementById(page + '-name-input');
+            const statusEl = document.getElementById(page + '-save-status');
+            const name     = (inputEl.value.trim().toUpperCase() || 'ANONYMOUS').substring(0, 10);
+            const scoreVal = window._currentScore ?? 0;
+
+            if (_db) {
+                statusEl.textContent = 'SAVING...';
+                statusEl.className   = 'save-status loading';
+
+                try {
+                    const { error } = await _db
+                        .from('leaderboard')
+                        .insert([{ player_name: name, score: scoreVal }]);
+
+                    if (error) throw error;
+                    statusEl.textContent = '✓ SCORE SAVED!';
+                    statusEl.className   = 'save-status ok';
+                    await new Promise(r => setTimeout(r, 700));
+                } catch(err) {
+                    console.error('[Supabase] Insert error:', err);
+                    statusEl.textContent = '✗ SAVE FAILED — OFFLINE?';
+                    statusEl.className   = 'save-status err';
+                    await new Promise(r => setTimeout(r, 900));
+                }
+            } else {
+                /* Offline fallback: localStorage high score */
+                const prev = parseInt(localStorage.getItem('capymage_hi') || '0');
+                if (scoreVal > prev) localStorage.setItem('capymage_hi', scoreVal);
+                statusEl.textContent = '(OFFLINE) HI-SCORE SAVED LOCALLY';
+                statusEl.className   = 'save-status ok';
+                await new Promise(r => setTimeout(r, 600));
+            }
+
+            if (action === 'retry') restartGame();
+            else                    goToMenu();
+        }
+
+        /* ─── FETCH LEADERBOARD ─── */
+        async function fetchTopScores() {
+            const listEl = document.getElementById('lb-list');
+
+            if (!_db) {
+                /* Show local hi-score as fallback */
+                const hi = localStorage.getItem('capymage_hi');
+                if (hi) {
+                    listEl.innerHTML = `
+                        <div class="lb-row rank-1">
+                            <span class="lb-rank">#1</span>
+                            <span class="lb-name">YOU</span>
+                            <span class="lb-score">${hi}</span>
+                        </div>
+                        <div class="lb-empty" style="font-size:6px;margin-top:10px">CONNECT SUPABASE<br>FOR GLOBAL BOARD</div>`;
+                } else {
+                    listEl.innerHTML = `<div class="lb-empty">NO SCORES YET<br><br><span style="font-size:6px;color:#333">CONNECT SUPABASE<br>FOR GLOBAL BOARD</span></div>`;
+                }
+                return;
+            }
+
+            listEl.innerHTML = '<div class="lb-empty">LOADING...</div>';
+
+            try {
+                const { data, error } = await _db
+                    .from('leaderboard')
+                    .select('player_name, score')
+                    .order('score', { ascending: false })
+                    .limit(5);
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    listEl.innerHTML = '<div class="lb-empty">NO SCORES YET<br>BE THE FIRST!</div>';
+                    return;
+                }
+
+                const rankClass = ['rank-1','rank-2','rank-3','',''];
+                listEl.innerHTML = data.map((row, i) => `
+                    <div class="lb-row ${rankClass[i] || ''}">
+                        <span class="lb-rank">#${i+1}</span>
+                        <span class="lb-name">${row.player_name}</span>
+                        <span class="lb-score">${row.score.toLocaleString()}</span>
+                    </div>
+                `).join('');
+            } catch(err) {
+                console.error('[Supabase] Fetch error:', err);
+                listEl.innerHTML = '<div class="lb-empty">FAILED TO LOAD</div>';
+            }
+        }
+
+        /* Load leaderboard on open */
+        fetchTopScores();
+    </script>
+
+    <script src="capybara.js"></script>
+</body>
+</html>
